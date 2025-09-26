@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// Contact Form Handling
+// Enhanced Contact Form with WhatsApp Integration
 document.getElementById('contactForm').addEventListener('submit', function (e) {
     e.preventDefault();
 
@@ -126,6 +126,7 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
     const name = formData.get('name');
     const phone = formData.get('phone');
     const email = formData.get('email');
+    const propertyType = formData.get('property-type');
     const message = formData.get('message');
     const consent = formData.get('consent');
 
@@ -167,19 +168,69 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
         return;
     }
 
-    // Simulate form submission
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-    submitBtn.disabled = true;
+    // Create professional WhatsApp message
+    const whatsappMessage = createPropertyDetailsTemplate(name, phone, email, propertyType, message);
 
-    setTimeout(() => {
-        showNotification('Thank you for your message! We will contact you within 24 hours.', 'success');
-        this.reset();
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-    }, 2000);
+    // Send to WhatsApp
+    sendToWhatsApp(whatsappMessage);
 });
+
+// WhatsApp Integration Functions
+function createPropertyDetailsTemplate(name, phone, email, propertyType, message) {
+    const currentDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    const currentTime = new Date().toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    return `🏠 *NEW PROPERTY INQUIRY - AMAARA PROPERTY MANAGEMENT*
+
+📅 *Date:* ${currentDate} at ${currentTime}
+👤 *Client Details:*
+• Name: ${name}
+• Phone: ${phone}
+• Email: ${email}
+• Property Type: ${propertyType || 'Not specified'}
+
+💬 *Message:*
+${message}
+
+🔗 *Source:* Website Contact Form
+📱 *Response Required:* Within 24 hours
+
+---
+*This inquiry was automatically generated from the Amaara Property Management website.*`;
+}
+
+function sendToWhatsApp(message) {
+    // WhatsApp Business number (replace with your actual number)
+    const whatsappNumber = '+919544453993'; // Replace with your WhatsApp Business number
+
+    // Encode the message for URL
+    const encodedMessage = encodeURIComponent(message);
+
+    // Create WhatsApp URL
+    const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodedMessage}`;
+
+    // Show loading notification
+    showNotification('Opening WhatsApp...', 'info');
+
+    // Open WhatsApp in new tab
+    setTimeout(() => {
+        window.open(whatsappUrl, '_blank');
+
+        // Show success message
+        showNotification('WhatsApp opened! Please send the message to complete your inquiry.', 'success');
+
+        // Reset form
+        document.getElementById('contactForm').reset();
+    }, 1000);
+}
 
 // Form validation helpers
 function showFieldError(fieldName, message) {
@@ -761,6 +812,14 @@ class SimpleParticleSystem {
                 this.updateScrollEffects();
             }, this.isMobile ? 50 : 32); // Less frequent on mobile
         });
+
+        // Mobile-specific optimizations
+        if (this.isMobile) {
+            // Reduce animation frequency on mobile
+            this.animationInterval = 1000 / 30; // 30 FPS instead of 60
+            this.connectionDistance = 80; // Shorter connection distance
+            this.particleSize = Math.random() * 1.5 + 0.5; // Smaller particles
+        }
     }
 
     setupIntersectionObserver() {

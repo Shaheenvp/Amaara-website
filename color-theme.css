@@ -1,0 +1,80 @@
+/* Amaara Property Management - Color Theme */
+/* Centralized color management for easy theme changes */
+
+:root {
+    /* Primary Brand Colors - Proper Yellow */
+    --primary-gold: #FFEB3B;
+    --secondary-gold: #FFC107;
+    --accent-gold: #FF9800;
+    --dark-gold: #F57F17;
+    --light-gold: #FFF9C4;
+
+    /* Text Colors */
+    --text-accent: var(--primary-gold);
+    --text-gold: var(--primary-gold);
+    --text-gold-secondary: var(--secondary-gold);
+
+    /* Gradient Colors */
+    --gradient-primary: linear-gradient(135deg, var(--primary-gold) 0%, var(--secondary-gold) 50%, var(--accent-gold) 100%);
+    --gradient-secondary: linear-gradient(135deg, var(--secondary-gold) 0%, var(--primary-gold) 100%);
+    --gradient-accent: linear-gradient(135deg, var(--accent-gold) 0%, var(--primary-gold) 100%);
+    --gradient-gold: linear-gradient(90deg, var(--primary-gold), var(--secondary-gold));
+
+    /* Shadow Colors */
+    --shadow-gold: 0 8px 25px rgba(255, 235, 59, 0.3);
+    --shadow-gold-soft: 0 4px 15px rgba(255, 235, 59, 0.2);
+    --shadow-gold-strong: 0 12px 30px rgba(255, 235, 59, 0.4);
+
+    /* Background Colors */
+    --bg-gold-light: rgba(255, 235, 59, 0.05);
+    --bg-gold-medium: rgba(255, 235, 59, 0.1);
+    --bg-gold-strong: rgba(255, 235, 59, 0.15);
+
+    /* Border Colors */
+    --border-gold: var(--primary-gold);
+    --border-gold-light: rgba(255, 235, 59, 0.2);
+    --border-gold-medium: rgba(255, 235, 59, 0.3);
+
+    /* Hover Colors */
+    --hover-gold: var(--primary-gold);
+    --hover-gold-bg: rgba(255, 235, 59, 0.1);
+    --hover-gold-border: var(--primary-gold);
+
+    /* Focus Colors */
+    --focus-gold: var(--primary-gold);
+    --focus-gold-shadow: 0 0 0 3px rgba(255, 235, 59, 0.2);
+    --focus-gold-shadow-soft: 0 0 0 3px rgba(255, 235, 59, 0.1);
+}
+
+/* Alternative Color Themes */
+/* Uncomment any theme below to use it */
+
+/* 
+:root {
+    --primary-gold: #FFEB3B;
+    --secondary-gold: #FFC107;
+    --accent-gold: #FF9800;
+    --dark-gold: #F57F17;
+    --light-gold: #FFF9C4;
+}
+*/
+
+/* 
+:root {
+    --primary-gold: #FFFF00;
+    --secondary-gold: #FFEB3B;
+    --accent-gold: #FFC107;
+    --dark-gold: #F57F17;
+    --light-gold: #FFFDE7;
+}
+*/
+
+/* 
+:root {
+    --primary-gold: #FFD54F;
+    --secondary-gold: #FFCA28;
+    --accent-gold: #FF8F00;
+    --dark-gold: #F57F17;
+    --light-gold: #FFFDE7;
+}
+*/
