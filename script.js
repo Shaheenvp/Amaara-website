@@ -638,31 +638,38 @@ heroLoadingStyle.textContent = `
 `;
 document.head.appendChild(heroLoadingStyle);
 
-// Optimized Canvas 2D Particle System for Light Mode
-class LightModeParticles {
+// Simple and Reliable Particle System
+class SimpleParticleSystem {
     constructor() {
         this.canvas = document.getElementById('particles-canvas');
-        if (!this.canvas) return;
+        if (!this.canvas) {
+            console.error('Particles canvas not found!');
+            return;
+        }
 
         this.ctx = this.canvas.getContext('2d');
         this.particles = [];
         this.mouse = { x: 0, y: 0 };
         this.animationId = null;
         this.isVisible = true;
+        this.time = 0;
 
-        // Performance settings based on device
+        // Mobile-optimized settings
         this.isMobile = window.innerWidth < 768;
-        this.particleCount = this.isMobile ? 40 : 80;
-        this.maxConnections = this.isMobile ? 20 : 40;
+        this.particleCount = this.isMobile ? 25 : 50;
+        this.maxConnections = this.isMobile ? 10 : 20;
 
+        console.log('Particle system constructor called');
         this.init();
     }
 
     init() {
+        console.log('Initializing particle system...');
         this.resizeCanvas();
         this.createParticles();
         this.setupEventListeners();
         this.setupIntersectionObserver();
+        console.log('Starting animation...');
         this.animate();
     }
 
@@ -673,49 +680,86 @@ class LightModeParticles {
 
     createParticles() {
         this.particles = [];
+        console.log(`Creating ${this.particleCount} particles...`);
         for (let i = 0; i < this.particleCount; i++) {
             this.particles.push({
                 x: Math.random() * this.canvas.width,
                 y: Math.random() * this.canvas.height,
-                vx: (Math.random() - 0.5) * 0.5,
-                vy: (Math.random() - 0.5) * 0.5,
-                size: Math.random() * 2 + 0.5,
-                opacity: Math.random() * 0.4 + 0.2,
-                color: `rgba(212, 175, 55, ${Math.random() * 0.4 + 0.3})`,
-                baseVx: (Math.random() - 0.5) * 0.3,
-                baseVy: (Math.random() - 0.5) * 0.3
+                vx: (Math.random() - 0.5) * 1.0,
+                vy: (Math.random() - 0.5) * 1.0,
+                size: Math.random() * 2 + 1,
+                opacity: 0.8,
+                color: 'rgba(212, 175, 55, 0.8)'
             });
         }
+        console.log(`Created ${this.particles.length} particles`);
     }
 
+
     setupEventListeners() {
-        // Throttled mouse movement
-        let mouseTimeout;
-        document.addEventListener('mousemove', (e) => {
-            clearTimeout(mouseTimeout);
-            mouseTimeout = setTimeout(() => {
-                this.mouse.x = e.clientX;
-                this.mouse.y = e.clientY;
-            }, 16);
-        });
+        // Mouse movement (desktop)
+        if (!this.isMobile) {
+            let mouseTimeout;
+            document.addEventListener('mousemove', (e) => {
+                clearTimeout(mouseTimeout);
+                mouseTimeout = setTimeout(() => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                    this.updateMouseInteractions();
+                }, 16);
+            });
+
+            // Mouse leave event
+            document.addEventListener('mouseleave', () => {
+                this.mouse.x = -1000;
+                this.mouse.y = -1000;
+            });
+        }
+
+        // Touch events for mobile
+        if (this.isMobile) {
+            document.addEventListener('touchstart', (e) => {
+                if (e.touches.length > 0) {
+                    this.mouse.x = e.touches[0].clientX;
+                    this.mouse.y = e.touches[0].clientY;
+                }
+            });
+
+            document.addEventListener('touchmove', (e) => {
+                e.preventDefault(); // Prevent scrolling on touch
+                if (e.touches.length > 0) {
+                    this.mouse.x = e.touches[0].clientX;
+                    this.mouse.y = e.touches[0].clientY;
+                    this.updateMouseInteractions();
+                }
+            });
+
+            document.addEventListener('touchend', () => {
+                this.mouse.x = -1000;
+                this.mouse.y = -1000;
+            });
+        }
 
         // Throttled window resize
         let resizeTimeout;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
+                this.isMobile = window.innerWidth < 768;
+                this.particleCount = this.isMobile ? 25 : 50;
+                this.maxConnections = this.isMobile ? 10 : 20;
                 this.resizeCanvas();
                 this.createParticles();
             }, 250);
         });
 
-        // Throttled scroll effects
+        // Optimized scroll effects for mobile
         let scrollTimeout;
         window.addEventListener('scroll', () => {
             clearTimeout(scrollTimeout);
             scrollTimeout = setTimeout(() => {
                 this.updateScrollEffects();
-            }, 32);
+            }, this.isMobile ? 50 : 32); // Less frequent on mobile
         });
     }
 
@@ -738,14 +782,53 @@ class LightModeParticles {
         const scrollY = window.scrollY;
         const scrollFactor = Math.min(scrollY / 1000, 0.5);
 
+        // Enhanced scroll effects for particles
         this.particles.forEach(particle => {
-            particle.vy = particle.baseVy + scrollFactor * 0.2;
+            particle.vy = particle.baseVy + scrollFactor * 0.3;
+            particle.vx = particle.baseVx + Math.sin(this.time * 0.001 + particle.x * 0.01) * 0.1;
+        });
+
+        // Floating elements respond to scroll
+        this.floatingElements.forEach(element => {
+            element.vy = element.baseVy + scrollFactor * 0.1;
+        });
+    }
+
+    updateMouseInteractions() {
+        // Enhanced mouse interactions
+        this.particles.forEach(particle => {
+            const dx = this.mouse.x - particle.x;
+            const dy = this.mouse.y - particle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 120) {
+                const force = (120 - distance) / 120 * 0.015;
+                particle.vx += (dx / distance) * force;
+                particle.vy += (dy / distance) * force;
+            }
+        });
+
+        // Floating elements also respond to mouse
+        this.floatingElements.forEach(element => {
+            const dx = this.mouse.x - element.x;
+            const dy = this.mouse.y - element.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 150) {
+                const force = (150 - distance) / 150 * 0.008;
+                element.vx += (dx / distance) * force;
+                element.vy += (dy / distance) * force;
+            }
         });
     }
 
     animate() {
-        if (!this.isVisible) return;
+        if (!this.isVisible) {
+            console.log('Particles not visible, pausing animation');
+            return;
+        }
 
+        this.time += 16;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Update and draw particles
@@ -754,51 +837,48 @@ class LightModeParticles {
             this.drawParticle(particle);
         });
 
-        // Draw connections (limited for performance)
+        // Draw connections
         this.drawConnections();
 
         this.animationId = requestAnimationFrame(() => this.animate());
     }
 
     updateParticle(particle) {
-        // Gentle mouse interaction
-        if (!this.isMobile) {
-            const dx = this.mouse.x - particle.x;
-            const dy = this.mouse.y - particle.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+        // Mouse interaction
+        const dx = this.mouse.x - particle.x;
+        const dy = this.mouse.y - particle.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
 
-            if (distance < 80) {
-                const force = (80 - distance) / 80 * 0.008;
-                particle.vx += (dx / distance) * force;
-                particle.vy += (dy / distance) * force;
-            }
+        if (distance < 100) {
+            const force = (100 - distance) / 100 * 0.01;
+            particle.vx += (dx / distance) * force;
+            particle.vy += (dy / distance) * force;
         }
 
         // Update position
         particle.x += particle.vx;
         particle.y += particle.vy;
 
-        // Gentle boundary bounce
-        if (particle.x < 0 || particle.x > this.canvas.width) {
-            particle.vx = -particle.vx * 0.8;
-            particle.x = Math.max(0, Math.min(particle.x, this.canvas.width));
-        }
-        if (particle.y < 0 || particle.y > this.canvas.height) {
-            particle.vy = -particle.vy * 0.8;
-            particle.y = Math.max(0, Math.min(particle.y, this.canvas.height));
-        }
+        // Wrap around edges
+        if (particle.x < 0) particle.x = this.canvas.width;
+        if (particle.x > this.canvas.width) particle.x = 0;
+        if (particle.y < 0) particle.y = this.canvas.height;
+        if (particle.y > this.canvas.height) particle.y = 0;
 
-        // Apply gentle drift and friction
-        particle.vx += (Math.random() - 0.5) * 0.005;
-        particle.vy += (Math.random() - 0.5) * 0.005;
-        particle.vx *= 0.995;
-        particle.vy *= 0.995;
+        // Add some drift
+        particle.vx += (Math.random() - 0.5) * 0.01;
+        particle.vy += (Math.random() - 0.5) * 0.01;
+
+        // Apply friction
+        particle.vx *= 0.99;
+        particle.vy *= 0.99;
 
         // Limit velocity
-        const maxVel = 0.8;
+        const maxVel = 2;
         if (Math.abs(particle.vx) > maxVel) particle.vx = particle.vx > 0 ? maxVel : -maxVel;
         if (Math.abs(particle.vy) > maxVel) particle.vy = particle.vy > 0 ? maxVel : -maxVel;
     }
+
 
     drawParticle(particle) {
         this.ctx.save();
@@ -807,13 +887,9 @@ class LightModeParticles {
         this.ctx.beginPath();
         this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         this.ctx.fill();
-
-        // Add subtle glow
-        this.ctx.shadowColor = particle.color;
-        this.ctx.shadowBlur = particle.size * 2;
-        this.ctx.fill();
         this.ctx.restore();
     }
+
 
     drawConnections() {
         let connectionCount = 0;
@@ -826,9 +902,10 @@ class LightModeParticles {
 
                 if (distance < 100) {
                     this.ctx.save();
-                    this.ctx.globalAlpha = (100 - distance) / 100 * 0.15;
-                    this.ctx.strokeStyle = 'rgba(212, 175, 55, 0.3)';
-                    this.ctx.lineWidth = 0.5;
+                    const alpha = (100 - distance) / 100 * 0.3;
+                    this.ctx.globalAlpha = alpha;
+                    this.ctx.strokeStyle = 'rgba(212, 175, 55, 0.5)';
+                    this.ctx.lineWidth = 1;
                     this.ctx.beginPath();
                     this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
                     this.ctx.lineTo(this.particles[j].x, this.particles[j].y);
@@ -860,13 +937,12 @@ class LightModeParticles {
     }
 }
 
-// Initialize particle system when DOM is loaded
+// Initialize simple particle system when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Only initialize if motion is not reduced and device supports it
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        // Add small delay to ensure canvas is ready
-        setTimeout(() => {
-            new LightModeParticles();
-        }, 100);
-    }
+    console.log('DOM loaded, initializing particle system...');
+
+    setTimeout(() => {
+        console.log('Creating particle system...');
+        new SimpleParticleSystem();
+    }, 100);
 });
